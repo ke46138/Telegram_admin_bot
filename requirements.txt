@@ -1,0 +1,6 @@
+fastapi
+pyTelegramBotAPI
+PyYAML
+sdnotify
+transliterate
+uvicorn
