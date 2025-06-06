@@ -13,7 +13,6 @@ logging.basicConfig(level=logging.DEBUG)
 def mute_ticker():
     while muteWork:
         try:
-            #print("Working")
             result = []
             with sqlite3.connect(dbname) as connection:
                 cursor = connection.cursor()
@@ -45,7 +44,7 @@ def unwarn_ticker():
             result = cursor.fetchall()
         for user in result:
             time = user[3]
-            if int(datetime.now().timestamp()) - time >= 86400:
+            if int(datetime.now().timestamp()) - time >= 604800:
                 cursor.execute('SELECT * FROM warn_table WHERE id = ? AND chatid = ?', (user[0], user[4],))
                 result = cursor.fetchall()
                 if result != [] or result != None:
