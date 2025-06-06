@@ -1,4 +1,4 @@
-main: # Все цифры написаны наугад, все совпадения случайны
+main: # Все цифры написаны с потолка, все совпадения случайны
   bot_token: your_bot_token
   webhook_url_full: https://your_domain.lol/path/to/webhook
   webhook_url: /path/to/webhook
@@ -15,6 +15,10 @@ main: # Все цифры написаны наугад, все совпаден
   blacklist:
     - 2452356543452624 # вроде как на них не действуют правила
     - 3475643533454756
+  group_chatid: -10052525252
+  rules_id: 35448
+  nav_post_id: 35536
+  thanks_post_id: 37084
   bot_path: /home/user # стирает путь в traceback
   suda_admins: admin usernames
   about_bot: |
@@ -48,3 +52,7 @@ misc:
   advert: |
     Обязательно прочитайте правила по команде: /rules
     Наш чат: <a href="chat_invite_link">тыкъ</a>
+  nav_post: |
+    Текст для навигационного поста
+  thanks_post: |
+    Текст для доски благодарностей
