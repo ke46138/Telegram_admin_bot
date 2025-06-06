@@ -1,4 +1,4 @@
-from config import rules, advert_text, url_allowlist, admins_usernames, bot_path
+import config
 from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton
 import traceback
 
@@ -12,10 +12,11 @@ def send_view_traceback(message, tb):
     tracebackno = InlineKeyboardButton('Нет', callback_data='tracebackno')
     markup.add(tracebackyes, tracebackno)
 
-    last_tb = tb.replace(bot_path, "*СТЁРТО*")
+    last_tb = tb.replace(config.bot_path, "*СТЁРТО*")
     print(last_tb)
 
-    bot_g.send_message(message.chat.id, "Произошла ошибка. Желаете посмотреть traceback?", reply_markup=markup)
+    bot_g.send_message(message.chat.id, "Произошла ошибка. Багрепорт будет отправлен админу. Желаете посмотреть traceback?", reply_markup=markup)
+    bot_g.send_message(config.report_admin_userid, f"Произошла ошибка при выполнении операции.\nTraceback:\n<blockquote expandable>{last_tb[-700:]}</blockquote>", parse_mode="HTML")
 
 def setup_handlers(bot):
 
@@ -30,7 +31,8 @@ def setup_handlers(bot):
             infounderpost = InlineKeyboardButton('Инфа под постом', callback_data='infounderpost')
             url_allowlist = InlineKeyboardButton('Белый список доменов', callback_data='urlallowlist')
             admin_list = InlineKeyboardButton('Список админов', callback_data='adminlist')
-            markup.add(rules, infounderpost, url_allowlist, admin_list)
+            thanks_list = InlineKeyboardButton('Доска благодарностей', callback_data='thankslist')
+            markup.add(rules, infounderpost, url_allowlist, admin_list, thanks_list)
 
             bot.send_message(message.chat.id, "Что вы хотите отладить?", reply_markup=markup)
         except Exception as e:
@@ -41,26 +43,28 @@ def setup_handlers(bot):
         try:
             raise Exception("TEST. IGNORE THIS")
         except:
-            print(traceback.format_exc())
             send_view_traceback(message, traceback.format_exc())
 
     @bot.callback_query_handler(func=lambda call: True)
     def callback_query(call):
         if call.data == 'rules':
-            bot.edit_message_text(f"{rules}", parse_mode='HTML', chat_id=call.message.chat.id, message_id=call.message.message_id)
+            bot.edit_message_text(config.rules, parse_mode='HTML', chat_id=call.message.chat.id, message_id=call.message.message_id)
             bot.answer_callback_query(call.id, "Готово!")
         elif call.data == 'infounderpost':
-            bot.edit_message_text(f"{advert_text}", parse_mode='HTML', chat_id=call.message.chat.id, message_id=call.message.message_id, disable_web_page_preview=True)
+            bot.edit_message_text(config.advert_text, parse_mode='HTML', chat_id=call.message.chat.id, message_id=call.message.message_id, disable_web_page_preview=True)
             bot.answer_callback_query(call.id, "Готово!")
         elif call.data == 'urlallowlist':
-            bot.edit_message_text(f"{url_allowlist}", chat_id=call.message.chat.id, message_id=call.message.message_id)
+            bot.edit_message_text(str(config.url_allowlist), chat_id=call.message.chat.id, message_id=call.message.message_id)
             bot.answer_callback_query(call.id, "Готово!")
         elif call.data == 'adminlist':
-            bot.edit_message_text(f"{admins_usernames}", parse_mode='HTML', chat_id=call.message.chat.id, message_id=call.message.message_id)
+            bot.edit_message_text(config.admins_usernames, parse_mode='HTML', chat_id=call.message.chat.id, message_id=call.message.message_id)
+            bot.answer_callback_query(call.id, "Готово!")
+        elif call.data == 'thankslist':
+            bot.edit_message_text(config.misc_thanks_post, parse_mode='HTML', chat_id=call.message.chat.id, message_id=call.message.message_id)
             bot.answer_callback_query(call.id, "Готово!")
         elif call.data == 'tracebackyes':
             global last_tb
-            bot.edit_message_text(f"{last_tb}", chat_id=call.message.chat.id, message_id=call.message.message_id)
+            bot.edit_message_text(last_tb[-500:], chat_id=call.message.chat.id, message_id=call.message.message_id)
             bot.answer_callback_query(call.id, "Готово!")
         elif call.data == 'tracebackno':
             bot.delete_message(call.message.chat.id, call.message.message_id)
