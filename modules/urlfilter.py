@@ -1,7 +1,8 @@
 from urllib.parse import urlparse
 import re
-from config import url_allowlist, admins, allowed_chats, user_blacklist
+import config
 import time
+from modules import auth
 
 def check_links_allowed(text: str) -> bool:
     """
@@ -16,12 +17,11 @@ def check_links_allowed(text: str) -> bool:
     for match in url_pattern.findall(text):
         parsed_url = urlparse(match)
         domain = parsed_url.netloc
-        
-        if domain not in url_allowlist:
+
+        if domain not in config.url_allowlist:
             return False
     
     return True
-
 
 def setup_urlfilter_handlers(bot):
     
@@ -29,16 +29,16 @@ def setup_urlfilter_handlers(bot):
     def filter(message):
         allowed_links = check_links_allowed(message.text)
         if not allowed_links:
-            if message.sender_chat:
-                user_id = message.sender_chat.id
-            elif message.from_user:
-                user_id = message.from_user.id
-            else:
-                bot.reply_to(message, "Ошибка: не удалось определить отправителя")
+            result = auth.authorize(message)
+
+            if result == -1:
+                bot.reply_to(message, "Ошибка: не удалось определить отправителя. ПОЗДРАВЛЯЮ, КАК ТЫ ЭТО СДЕЛАЛ?")
                 return
-            if user_id not in admins and user_id not in allowed_chats and user_id not in user_blacklist:
-                warn_message = bot.reply_to(message, "Запрещённая ссылка!")
-                time.sleep(1)
-                bot.delete_message(message.chat.id, message.message_id)
-                time.sleep(10)
-                bot.delete_message(warn_message.chat.id, warn_message.message_id)
+            elif result == 1:
+                return
+
+            warn_message = bot.reply_to(message, "Запрещённая ссылка!")
+            time.sleep(1)
+            bot.delete_message(message.chat.id, message.message_id)
+            time.sleep(10)
+            bot.delete_message(warn_message.chat.id, warn_message.message_id)
